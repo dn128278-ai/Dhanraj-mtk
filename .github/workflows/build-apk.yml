@@ -44,18 +44,24 @@ jobs:
             echo "FLUTTER_DIR=$FOUND_DIR" >> $GITHUB_ENV
           fi
 
-      - name: Rebuild Clean Android Scaffold & Build APK
+      - name: Fix Dart Import Paths & Build APK
         run: |
           cd ${{ env.FLUTTER_DIR }}
           
-          # Corrupted android folder ko remove karke fresh scaffold regenerate karna
+          # Clean old Android scaffold & recreate fresh
           rm -rf android
           flutter create . --platforms=android --org=com.dhanraj.games
           
-          # Dependencies download karna
+          # Fix import paths in main.dart automatically if relative imports exist
+          if [ -f "lib/main.dart" ]; then
+            sed -i "s|import 'screens/|import 'package:dhanraj_games/screens/|g" lib/main.dart || true
+            sed -i "s|import 'providers/|import 'package:dhanraj_games/providers/|g" lib/main.dart || true
+          fi
+
+          # Get dependencies
           flutter pub get
           
-          # Release APK build karna
+          # Build Release APK
           flutter build apk --release --no-tree-shake-icons
 
       - name: Upload Release APK Artifact
