@@ -44,7 +44,7 @@ jobs:
             echo "FLUTTER_DIR=$FOUND_DIR" >> $GITHUB_ENV
           fi
 
-      - name: Fix Dart Import Paths & Build APK
+      - name: Auto-Detect Package Name, Fix Imports & Build APK
         run: |
           cd ${{ env.FLUTTER_DIR }}
           
@@ -52,10 +52,15 @@ jobs:
           rm -rf android
           flutter create . --platforms=android --org=com.dhanraj.games
           
-          # Fix import paths in main.dart automatically if relative imports exist
+          # Get actual package name from pubspec.yaml
+          PKG_NAME=$(grep "^name:" pubspec.yaml | awk '{print $2}' | tr -d '\r"' "'")
+          echo "Detected Package Name: $PKG_NAME"
+          
+          # Auto-Fix main.dart imports to use relative or exact package name
           if [ -f "lib/main.dart" ]; then
-            sed -i "s|import 'screens/|import 'package:dhanraj_games/screens/|g" lib/main.dart || true
-            sed -i "s|import 'providers/|import 'package:dhanraj_games/providers/|g" lib/main.dart || true
+            sed -i "s|import 'package:dhanraj_games/|import 'package:$PKG_NAME/|g" lib/main.dart || true
+            sed -i "s|import 'screens/|import 'package:$PKG_NAME/screens/|g" lib/main.dart || true
+            sed -i "s|import 'providers/|import 'package:$PKG_NAME/providers/|g" lib/main.dart || true
           fi
 
           # Get dependencies
