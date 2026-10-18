@@ -44,17 +44,18 @@ jobs:
             echo "FLUTTER_DIR=$FOUND_DIR" >> $GITHUB_ENV
           fi
 
-      - name: Repair Android Scaffold & Build Release APK
+      - name: Rebuild Clean Android Scaffold & Build APK
         run: |
           cd ${{ env.FLUTTER_DIR }}
           
-          # Repair Android Project Scaffold if build.gradle missing/corrupted
+          # Corrupted android folder ko remove karke fresh scaffold regenerate karna
+          rm -rf android
           flutter create . --platforms=android --org=com.dhanraj.games
           
-          # Fetch Dependencies
+          # Dependencies download karna
           flutter pub get
           
-          # Build Release APK
+          # Release APK build karna
           flutter build apk --release --no-tree-shake-icons
 
       - name: Upload Release APK Artifact
