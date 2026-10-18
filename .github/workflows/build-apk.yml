@@ -25,7 +25,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up Flutter (Fixed Compatibility Version)
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.19.6'
@@ -44,10 +44,17 @@ jobs:
             echo "FLUTTER_DIR=$FOUND_DIR" >> $GITHUB_ENV
           fi
 
-      - name: Build Android Release APK
+      - name: Repair Android Scaffold & Build Release APK
         run: |
           cd ${{ env.FLUTTER_DIR }}
+          
+          # Repair Android Project Scaffold if build.gradle missing/corrupted
+          flutter create . --platforms=android --org=com.dhanraj.games
+          
+          # Fetch Dependencies
           flutter pub get
+          
+          # Build Release APK
           flutter build apk --release --no-tree-shake-icons
 
       - name: Upload Release APK Artifact
