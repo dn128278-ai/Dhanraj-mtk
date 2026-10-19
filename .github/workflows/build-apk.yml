@@ -44,19 +44,25 @@ jobs:
             echo "FLUTTER_DIR=$FOUND_DIR" >> $GITHUB_ENV
           fi
 
-      - name: Clean Android Scaffold & Auto Fix Imports
+      - name: Fix Package Name & Build APK
         run: |
           cd ${{ env.FLUTTER_DIR }}
           
-          # Clean old Android scaffold
-          rm -rf android
-          flutter create . --platforms=android --org=com.dhanraj.games
+          # Extract actual package name from pubspec.yaml automatically
+          PKG_NAME=$(grep "^name:" pubspec.yaml | head -n 1 | awk '{print $2}' | tr -d '\r"' "'")
+          echo "Using Exact Package Name: $PKG_NAME"
           
-          # Fix main.dart imports safely
+          # Update all package imports in lib/main.dart to match the exact package name
           if [ -f "lib/main.dart" ]; then
-            sed -i 's|import '\''screens/|import '\''package:flutter_app/screens/|g' lib/main.dart || true
-            sed -i 's|import '\''providers/|import '\''package:flutter_app/providers/|g' lib/main.dart || true
-            sed -i 's|import '\''package:dhanraj_games/|import '\''package:flutter_app/|g' lib/main.dart || true
+            python3 -c "
+            import re
+            with open('lib/main.dart', 'r') as f:
+                content = f.read()
+            # Replace any old package imports with the correct dynamic package name
+            content = re.sub(r'package:[^/]+/', 'package:$PKG_NAME/', content)
+            with open('lib/main.dart', 'w') as f:
+                f.write(content)
+            "
           fi
 
           # Get dependencies
