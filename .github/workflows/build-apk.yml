@@ -44,26 +44,31 @@ jobs:
             echo "FLUTTER_DIR=$FOUND_DIR" >> $GITHUB_ENV
           fi
 
-      - name: Fix Package Name & Build APK
+      - name: Fix Imports & Build APK via Python
         run: |
           cd ${{ env.FLUTTER_DIR }}
           
-          # Extract actual package name from pubspec.yaml automatically
-          PKG_NAME=$(grep "^name:" pubspec.yaml | head -n 1 | awk '{print $2}' | tr -d '\r"' "'")
-          echo "Using Exact Package Name: $PKG_NAME"
-          
-          # Update all package imports in lib/main.dart to match the exact package name
-          if [ -f "lib/main.dart" ]; then
-            python3 -c "
-            import re
-            with open('lib/main.dart', 'r') as f:
-                content = f.read()
-            # Replace any old package imports with the correct dynamic package name
-            content = re.sub(r'package:[^/]+/', 'package:$PKG_NAME/', content)
-            with open('lib/main.dart', 'w') as f:
-                f.write(content)
-            "
-          fi
+          # Run Python script to handle package name and imports safely
+          python3 -c "
+          import os, re
+
+          pkg_name = 'flutter_app'
+          if os.path.exists('pubspec.yaml'):
+              with open('pubspec.yaml', 'r') as f:
+                  for line in f:
+                      if line.startswith('name:'):
+                          pkg_name = line.split(':')[1].strip().strip('\"\'\r')
+                          break
+          print('Active Package Name:', pkg_name)
+
+          if os.path.exists('lib/main.dart'):
+              with open('lib/main.dart', 'r') as f:
+                  content = f.read()
+              content = re.sub(r'package:[^/]+/', f'package:{pkg_name}/', content)
+              with open('lib/main.dart', 'w') as f:
+                  f.write(content)
+              print('Successfully updated main.dart imports!')
+          "
 
           # Get dependencies
           flutter pub get
