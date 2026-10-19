@@ -44,11 +44,15 @@ jobs:
             echo "FLUTTER_DIR=$FOUND_DIR" >> $GITHUB_ENV
           fi
 
-      - name: Fix Imports & Build APK via Python
+      - name: Clean Android Scaffold, Fix Imports & Build APK
         run: |
           cd ${{ env.FLUTTER_DIR }}
           
-          # Run Python script to handle package name and imports safely
+          # Remove broken Android directory & create fresh Android scaffold
+          rm -rf android
+          flutter create . --platforms=android --org=com.dhanraj.games
+          
+          # Run Python script to fix main.dart imports dynamically
           python3 -c "
           import os, re
 
@@ -70,10 +74,8 @@ jobs:
               print('Successfully updated main.dart imports!')
           "
 
-          # Get dependencies
+          # Fetch dependencies & Compile
           flutter pub get
-          
-          # Build Release APK
           flutter build apk --release --no-tree-shake-icons
 
       - name: Upload Release APK Artifact
