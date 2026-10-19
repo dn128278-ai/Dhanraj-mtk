@@ -44,43 +44,14 @@ jobs:
             echo "FLUTTER_DIR=$FOUND_DIR" >> $GITHUB_ENV
           fi
 
-      - name: Clean Android Scaffold & Safe Fix Imports
+      - name: Clean Android Scaffold & Build APK
         run: |
           cd ${{ env.FLUTTER_DIR }}
           
-          # Clean broken android folder & recreate fresh scaffold
+          # Clean broken Android folder & recreate fresh scaffold
           rm -rf android
           flutter create . --platforms=android --org=com.dhanraj.games
           
-          # Python script to ONLY replace local project imports, keeping flutter/ imports intact
-          python3 -c "
-          import os, re
-
-          pkg_name = 'flutter_app'
-          if os.path.exists('pubspec.yaml'):
-              with open('pubspec.yaml', 'r') as f:
-                  for line in f:
-                      if line.startswith('name:'):
-                          pkg_name = line.split(':')[1].strip().strip('\"\'\r')
-                          break
-          print('Project Package Name:', pkg_name)
-
-          if os.path.exists('lib/main.dart'):
-              with open('lib/main.dart', 'r') as f:
-                  content = f.read()
-              
-              # Replace 'package:dhanraj_games/' with correct package name
-              content = re.sub(r'package:dhanraj_games/', f'package:{pkg_name}/', content)
-              
-              # Fix relative imports if any
-              content = re.sub(r\"import\s+['\"]screens/\", f\"import 'package:{pkg_name}/screens/\", content)
-              content = re.sub(r\"import\s+['\"]providers/\", f\"import 'package:{pkg_name}/providers/\", content)
-              
-              with open('lib/main.dart', 'w') as f:
-                  f.write(content)
-              print('Successfully updated main.dart safely!')
-          "
-
           # Get dependencies
           flutter pub get
           
