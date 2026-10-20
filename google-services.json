@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1012477282677",
+    "project_id": "dhanraj-games-f700d",
+    "storage_bucket": "dhanraj-games-f700d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1012477282677:android:7c313f2b3c1c782d056b3c",
+        "android_client_info": {
+          "package_name": "com.dhanraj.games"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC014SKwYVDhLiZpsfGiJ2OgPuSVyWTP10"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
